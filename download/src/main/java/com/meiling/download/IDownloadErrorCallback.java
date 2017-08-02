@@ -5,4 +5,5 @@ package com.meiling.download;
  */
 public interface IDownloadErrorCallback {
     void onError();
+    void noPermission(int type);
 }

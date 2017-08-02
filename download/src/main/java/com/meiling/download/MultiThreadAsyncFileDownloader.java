@@ -62,6 +62,10 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
         activity = context;
     }
 
+    public void start(){
+        execute("");
+    }
+
     public void stopSubThread(){
         stopFlag = true;
         for(int i = 0;i<sub_thread;i++){

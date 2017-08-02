@@ -1,13 +1,18 @@
 package com.meiling.download;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,11 +48,12 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
     private Dialog updateDialog;
     private Context activity;
 
-    public MultiThreadAPKDownloader(Activity context, String netUrl, IDownloadCallback icallback, Dialog dialog){
+    public MultiThreadAPKDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
         this.icallback = icallback;
+        this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
     }
@@ -62,8 +68,41 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         activity = context;
     }
 
-    public void stopSubThread(){
+    public void start(){
+        //TODO 需要检查是否拥有INTERNET权限，与读写权限
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(activity,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_INTERNET_WRITE_EX_STORAGE);
+            }
+            return;
+        }else if(ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_INTERNET);
+            }
+            return;
+        }else if(ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_WRITE_EX_STORAGE);
+            }
+            return;
+        }
+        execute("");
+    }
+
+    public void stop(){
+        stopSubThread();
+    }
+
+    private void stopSubThread(){
         stopFlag = true;
+        if(sub_thread==0 || subThreadList.size()==0){
+            return;
+        }
         for(int i = 0;i<sub_thread;i++){
             if(subThreadList!=null && subThreadList.get(i)!=null) {
                 subThreadList.get(i).setBreakPointFlag(true);
