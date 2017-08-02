@@ -1,1 +1,1 @@
-include ':app', ':frequentlyusedlib'
+include ':app', ':frequentlyusedlib', ':download'

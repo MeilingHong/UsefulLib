@@ -1,15 +1,22 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
+
+
+ext {
+    PUBLISH_GROUP_ID = 'com.meiling.download'
+    PUBLISH_ARTIFACT_ID = 'downloader'
+    PUBLISH_VERSION = '1.0'
+}
 
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
+
     defaultConfig {
-        applicationId "com.meiling.usefullib"
         minSdkVersion 9
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
     }
     buildTypes {
         release {
@@ -26,3 +33,5 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.3.1'
 }
+
+apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
