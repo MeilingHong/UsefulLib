@@ -222,10 +222,19 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.ERROR_MALFORMEDURL);
+            }
         } catch (ProtocolException e) {
             e.printStackTrace();
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.ERROR_PROTOCOL);
+            }
         } catch (IOException e) {
             e.printStackTrace();
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.ERROR_SERVER_CONNECTION);
+            }
         }
         return null;
     }

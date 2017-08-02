@@ -35,11 +35,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }else{
                     isStart = true;
-                    apkDownloader = new MultiThreadAPKDownloader(MainActivity.this, "http://static.quanjiakan.com/familycare-download/apk/quanjiakanUser-release.apk",
+                    apkDownloader = new MultiThreadAPKDownloader(MainActivity.this, "http://p.gdown.baidu.com/da28deda0f8f3ed81f2f8360db97f932ea86b8bb4405bf6839aed9ff001be08de15582b63c16bfe2a85034000598d3c52683d64b856a1c8b1f46147f227e476d19a5ba74640361e5a99099cc7bd9d25952651f73c5d0e634d9c84964f9d93f576c70dc5af4eb8e52d13aeb11d1fda1fbd3fbb67699113e80056b257e424e2dce21cf61eabeebcaa8b74ee3e3972bc83095f3d9272cc26ff13282f6cabd2b2542441b89e8197f984c\n",
                             new IDownloadCallback() {
                                 @Override
                                 public void updateProgress(int progress, String rate) {
                                     show.setText(rate);
+                                    if(progress>=100){
+                                        isStart = false;
+                                    }
                                 }
                             }, new IDownloadErrorCallback() {
                         @Override
@@ -52,15 +55,9 @@ public class MainActivity extends AppCompatActivity {
                             switch (type){
                                 case IErrorCode.NO_PERMISSION_INTERNET_WRITE_EX_STORAGE:
                                     PermissionGen.with(MainActivity.this)
-                                            .addRequestCode(IErrorCode.NO_PERMISSION_WRITE_EX_STORAGE)
+                                            .addRequestCode(IErrorCode.NO_PERMISSION_INTERNET_WRITE_EX_STORAGE)
                                             .permissions(
-                                                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                            )
-                                            .request();
-                                    PermissionGen.with(MainActivity.this)
-                                            .addRequestCode(IErrorCode.NO_PERMISSION_INTERNET)
-                                            .permissions(
-                                                    Manifest.permission.INTERNET
+                                                    Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET
                                             )
                                             .request();
                                     break;
@@ -79,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
                                                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                                             )
                                             .request();
+                                    break;
+                                case IErrorCode.ERROR_MALFORMEDURL:
+                                    Toast.makeText(MainActivity.this, "URL 格式错误", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case IErrorCode.ERROR_PROTOCOL:
+                                    Toast.makeText(MainActivity.this, "协议异常", Toast.LENGTH_SHORT).show();
+                                    break;
+                                case IErrorCode.ERROR_SERVER_CONNECTION:
+                                    Toast.makeText(MainActivity.this, "连接异常", Toast.LENGTH_SHORT).show();
                                     break;
                             }
                         }
