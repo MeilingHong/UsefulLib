@@ -5,14 +5,12 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,19 +30,18 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
      * 可定义得更大
      */
     private final int MAX_SUBTHREAD = 3;
+
+    private boolean stopFlag;
+    private boolean isAllowMobileNetwork;//是否允许移动网络环境下下载
+    private int sub_thread = 0;
+    private int currentNetworkType;
+    private int fileSize;
+    private long downloadedSize;
     private String netUrl;
     private String savePath;
     private List<SingleDownloadThread> subThreadList;
-
-    private int sub_thread = 0;
-
-    private boolean stopFlag;
-
-    private int fileSize;
-    private long downloadedSize;
     private IDownloadCallback icallback;
     private IDownloadErrorCallback iErrorcallback;
-
     private Dialog updateDialog;
     private Context activity;
 
@@ -64,9 +61,12 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
+        //TODO 默认不允许使用移动网络进行下载
+        isAllowMobileNetwork = false;
     }
 
-    public MultiThreadAPKDownloader(Service context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
+    public MultiThreadAPKDownloader(Activity context, String netUrl,boolean isMobileNet, IDownloadCallback icallback,
+                                    IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
@@ -74,6 +74,21 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
+        //TODO 根据配置进行规制进行下载，当允许时，切换为
+        isAllowMobileNetwork = isMobileNet;
+    }
+
+    public MultiThreadAPKDownloader(Service context, String netUrl,boolean isMobileNet, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
+        sub_thread = MAX_SUBTHREAD;
+        this.netUrl = netUrl;
+        subThreadList = new ArrayList<SingleDownloadThread>();
+        this.icallback = icallback;
+        this.iErrorcallback = iErrorcallback;
+        this.updateDialog = dialog;
+        activity = context;
+
+        //TODO 根据配置进行规制进行下载，当允许时，切换为
+        isAllowMobileNetwork = isMobileNet;
     }
 
     public void start(){
@@ -84,28 +99,43 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
             ActivityCompat.checkSelfPermission(activity,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_INTERNET_WRITE_EX_STORAGE);
+                iErrorcallback.onError(IErrorCode.NO_PERMISSION_INTERNET_WRITE_EX_STORAGE);
             }
             return;
         }else if(ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_INTERNET);
+                iErrorcallback.onError(IErrorCode.NO_PERMISSION_INTERNET);
             }
             return;
         }else if(ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_WRITE_EX_STORAGE);
+                iErrorcallback.onError(IErrorCode.NO_PERMISSION_WRITE_EX_STORAGE);
             }
             return;
         }else if(ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED){
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_ACCESS_NETWORK_STATE);
+                iErrorcallback.onError(IErrorCode.NO_PERMISSION_ACCESS_NETWORK_STATE);
             }
             return;
         }
+        //***********************************************************************
+        //获取当前网络环境
+        currentNetworkType = NetCheckUtil.checkNetworkType(activity);
+        if(currentNetworkType==NetCheckUtil.TYPE_NET_WORK_DISABLED || currentNetworkType==NetCheckUtil.TYPE_OTHER){
+            if(iErrorcallback!=null){
+                iErrorcallback.onError(IErrorCode.ERROR_NETWORK_DISABLE);
+            }
+            return;
+        }else if(currentNetworkType==NetCheckUtil.TYPE_MOBILE && !isAllowMobileNetwork){
+            if(iErrorcallback!=null){
+                iErrorcallback.onError(IErrorCode.ERROR_NETWORK_MOBILE_FORBID_BY_USER);
+            }
+            return;
+        }
+        //TODO 允许进行下载的网络
         execute("");
     }
 
@@ -192,37 +222,55 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 int range = fileSize/sub_thread;
                 for(int i = 0;i<sub_thread;i++){
                     if(i<sub_thread-1){
-                        subThreadList.add(new SingleDownloadThread(netUrl, fileSize, sub_thread, i,
+                        subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
                                 i * range, i * range + (range - 1), savePath, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
                             }
-                        }));
+                        },iErrorcallback));
                     }else{
-                        subThreadList.add(new SingleDownloadThread(netUrl, fileSize, sub_thread, i,
+                        subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
                                 i * range, fileSize, savePath, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
                             }
-                        }));
+                        },iErrorcallback));
                     }
 
                 }
-                for(int i = 0;i<sub_thread;i++){
-                    subThreadList.get(i).start();
+
+//                for(int i = 0;i<sub_thread;i++){
+//                    subThreadList.get(i).start();
+//                }
+
+                if(subThreadList.size()>0 && subThreadList.get(0)!=null){
+                    subThreadList.get(0).start();
                 }
+                if(subThreadList.size()>1 && subThreadList.get(1)!=null){
+                    subThreadList.get(1).start();
+                }
+                if(subThreadList.size()>2 && subThreadList.get(2)!=null){
+                    subThreadList.get(2).start();
+                }
+
+
+                //TODO 保证子线程是启动的
                 while (true) {
                     if((subThreadList.get(0)!=null? subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? subThreadList.get(1).isAlive():true) &&
                             (subThreadList.get(2)!=null? subThreadList.get(2).isAlive():true)
                             ){
+                        Log.e("MainA",""+"   ....................1111   "+NetCheckUtil.checkNetworkType(activity));
                         break;
                     }else{
-
+                        Log.e("MainA",""+"   ....................2222   "+NetCheckUtil.checkNetworkType(activity));
                     }
+
                 }
+
+                //TODO 保证子线程完成后再退出
                 while (true) {
                     if((subThreadList.get(0)!=null? !subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? !subThreadList.get(1).isAlive():true) &&
@@ -238,17 +286,17 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         } catch (MalformedURLException e) {
             e.printStackTrace();
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.ERROR_MALFORMEDURL);
+                iErrorcallback.onError(IErrorCode.ERROR_MALFORMEDURL);
             }
         } catch (ProtocolException e) {
             e.printStackTrace();
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.ERROR_PROTOCOL);
+                iErrorcallback.onError(IErrorCode.ERROR_PROTOCOL);
             }
         } catch (IOException e) {
             e.printStackTrace();
             if(iErrorcallback!=null){
-                iErrorcallback.noPermission(IErrorCode.ERROR_SERVER_CONNECTION);
+                iErrorcallback.onError(IErrorCode.ERROR_SERVER_CONNECTION);
             }
         }
         return null;
@@ -270,20 +318,35 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 if(updateDialog!=null && updateDialog.isShowing()){
                     updateDialog.dismiss();
                 }
+                if(iErrorcallback!=null){
+                    iErrorcallback.stopByUser();
+                }
+                Log.e("MainA","onPostExecute   stopByUser ");
             }else{
                 if(updateDialog!=null && updateDialog.isShowing()){
                     updateDialog.dismiss();
                 }
-                FileDownloaderUtil.updateAppVersion(activity);
-                UtilTool.updateCheckTime(activity,netUrl);
+
+                if(downloadedSize<fileSize){
+                    if(iErrorcallback!=null){
+                        iErrorcallback.noFinishDownload();
+                    }
+                    Log.e("MainA","onPostExecute   noFinishDownload ");
+                }else{
+                    FileDownloaderUtil.updateAppVersion(activity);
+                    UpdateUtil.updateCheckTime(activity,netUrl);
+                    Log.e("MainA","onPostExecute   updateAppVersion ");
+                }
             }
         }else{
             if(updateDialog!=null && updateDialog.isShowing()){
                 updateDialog.dismiss();
             }
             if(iErrorcallback!=null){
-                iErrorcallback.onError();
+                iErrorcallback.noFinishDownload();
             }
+
+            Log.e("MainA","onPostExecute    subThreadList.size()<0   noFinishDownload");
         }
     }
 

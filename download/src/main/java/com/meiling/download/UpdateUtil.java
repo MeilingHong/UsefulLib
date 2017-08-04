@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
  * Created by Administrator on 2017/8/2.
  */
 
-public class UtilTool {
+public class UpdateUtil {
 
     private static final String PREFERENCES_FILE = "base_setting";
     private static final String UPDATE_TIME = "update_time";

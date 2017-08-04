@@ -131,7 +131,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                 int range = fileSize/sub_thread;
                 for(int i = 0;i<sub_thread;i++){
                     if(i<sub_thread-1){
-                        subThreadList.add(new SingleDownloadThread(netUrl, fileSize, sub_thread, i,
+                        subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
                                 i * range, i * range + (range - 1), savePath, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
@@ -139,7 +139,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                             }
                         }));
                     }else{
-                        subThreadList.add(new SingleDownloadThread(netUrl, fileSize, sub_thread, i,
+                        subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
                                 i * range, fileSize, savePath, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
@@ -188,25 +188,30 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                 /**
                  * 调用外部APP打开文件
                  */
-                if(savePath.toLowerCase().endsWith("doc") || savePath.toLowerCase().endsWith("docx")){
-                    Intent intent = new Intent("android.intent.action.VIEW");
-                    intent.addCategory("android.intent.category.DEFAULT");
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setDataAndType(Uri.fromFile(new File(savePath)), "application/msword");
-                    activity.startActivity(intent);
+                if(downloadedSize<fileSize){
+                    if(iErrorcallback!=null){
+                        iErrorcallback.noFinishDownload();
+                    }
                 }else{
-                    Intent intent = new Intent("android.intent.action.VIEW");
-                    intent.setDataAndType(Uri.fromFile(new File(savePath)), "*/*");
-                    activity.startActivity(intent);
+                    if(savePath.toLowerCase().endsWith("doc") || savePath.toLowerCase().endsWith("docx")){
+                        Intent intent = new Intent("android.intent.action.VIEW");
+                        intent.addCategory("android.intent.category.DEFAULT");
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.setDataAndType(Uri.fromFile(new File(savePath)), "application/msword");
+                        activity.startActivity(intent);
+                    }else{
+                        Intent intent = new Intent("android.intent.action.VIEW");
+                        intent.setDataAndType(Uri.fromFile(new File(savePath)), "*/*");
+                        activity.startActivity(intent);
+                    }
                 }
-
             }
         }else{
             if(updateDialog!=null && updateDialog.isShowing()){
                 updateDialog.dismiss();
             }
             if(iErrorcallback!=null){
-                iErrorcallback.onError();
+                iErrorcallback.noFinishDownload();
             }
         }
     }
