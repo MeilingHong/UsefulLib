@@ -22,9 +22,16 @@ import java.util.List;
 public class FileDownloaderUtil {
 
     public static final String TEMP_DIR = "tempfiledir";
-    public static final String VERSION_APK = "base.apk";
-    public static List<SingleDownloadThread> list = new ArrayList<SingleDownloadThread>();
-    
+    private static String VERSION_APK = "base.apk";
+
+    public static String getVersionApk() {
+        return VERSION_APK;
+    }
+
+    public static void setVersionApk(String versionApk) {
+        VERSION_APK = versionApk;
+    }
+
     public static void updateAppVersion(Context context){
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath()+

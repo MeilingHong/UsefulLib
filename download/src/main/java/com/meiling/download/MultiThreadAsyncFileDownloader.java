@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *
+ * 下载指定文件并将文件打开
+ *
  * Created by Administrator on 2016/9/21 0021.
  */
 public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> {
@@ -43,7 +46,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
     private Dialog updateDialog;
     private Context activity;
 
-    public MultiThreadAsyncFileDownloader(Activity context, String netUrl, IDownloadCallback icallback, Dialog dialog){
+    public MultiThreadAsyncFileDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();

@@ -163,12 +163,12 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 /**
                  *
                  */
-                File apk = new File(dir, FileDownloaderUtil.VERSION_APK);
+                File apk = new File(dir, FileDownloaderUtil.getVersionApk());
                 this.savePath = apk.getAbsolutePath();
                 if(apk.exists()){
-                    apk.renameTo(new File(dir,"temp"+FileDownloaderUtil.VERSION_APK));
+                    apk.renameTo(new File(dir,"temp"+FileDownloaderUtil.getVersionApk()));
                     apk.delete();
-                    apk = new File(dir,FileDownloaderUtil.VERSION_APK);
+                    apk = new File(dir,FileDownloaderUtil.getVersionApk());
                     apk.createNewFile();
                     RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
                     randomAccessFile.setLength(fileSize);
