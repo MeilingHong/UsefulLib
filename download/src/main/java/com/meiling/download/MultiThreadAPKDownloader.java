@@ -48,6 +48,14 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
     private Dialog updateDialog;
     private Context activity;
 
+    /**
+     * TODO 修改点：
+     * TODO 1、需要判断网络切换时（切换网络时会出现问题），是否需要提示，暂停下载
+     * TODO 1.1、是否在允许在非WiFi网络状态下允许下载
+     * TODO 2、若支持暂停下载，则需要下载支持断点续传
+     * TODO 3、文件命名问题------如何建立一个有效的文件名映射规则
+     */
+
     public MultiThreadAPKDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
@@ -70,6 +78,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
     public void start(){
         //TODO 需要检查是否拥有INTERNET权限，与读写权限
+        //TODO 若需要引入，则compileSDKVersion 需要使用23 或以上版本
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(activity,
@@ -88,6 +97,12 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
             if(iErrorcallback!=null){
                 iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_WRITE_EX_STORAGE);
+            }
+            return;
+        }else if(ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED){
+            if(iErrorcallback!=null){
+                iErrorcallback.noPermission(IErrorCode.NO_PERMISSION_ACCESS_NETWORK_STATE);
             }
             return;
         }

@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 //  http://static.quanjiakan.com/familycare-download/apk/quanjiakanUser-release.apk
                 // "http://p.gdown.baidu.com/da28deda0f8f3ed81f2f8360db97f932ea86b8bb4405bf6839aed9ff001be08de15582b63c16bfe2a85034000598d3c52683d64b856a1c8b1f46147f227e476d19a5ba74640361e5a99099cc7bd9d25952651f73c5d0e634d9c84964f9d93f576c70dc5af4eb8e52d13aeb11d1fda1fbd3fbb67699113e80056b257e424e2dce21cf61eabeebcaa8b74ee3e3972bc83095f3d9272cc26ff13282f6cabd2b2542441b89e8197f984c\n"
-
                 if(isStart){
                     isStart = false;
                     if(apkDownloader!=null){
