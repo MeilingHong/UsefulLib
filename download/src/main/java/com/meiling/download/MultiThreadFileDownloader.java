@@ -25,7 +25,7 @@ import java.util.List;
  *
  * Created by Administrator on 2016/9/21 0021.
  */
-public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> {
+public class MultiThreadFileDownloader extends AsyncTask<String,Long,Void> {
     /**
      * 可定义得更大
      */
@@ -45,17 +45,31 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
 
     private Dialog updateDialog;
     private Context activity;
+    private boolean isAllowMobileNetwork;
 
-    public MultiThreadAsyncFileDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
+    public MultiThreadFileDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
         this.icallback = icallback;
         this.updateDialog = dialog;
         activity = context;
+
+        isAllowMobileNetwork = false;
     }
 
-    public MultiThreadAsyncFileDownloader(Service context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
+    public MultiThreadFileDownloader(Activity context, String netUrl, boolean isAllowMobile, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
+        sub_thread = MAX_SUBTHREAD;
+        this.netUrl = netUrl;
+        subThreadList = new ArrayList<SingleDownloadThread>();
+        this.icallback = icallback;
+        this.updateDialog = dialog;
+        activity = context;
+
+        isAllowMobileNetwork = isAllowMobile;
+    }
+
+    public MultiThreadFileDownloader(Service context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
         sub_thread = MAX_SUBTHREAD;
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
@@ -63,6 +77,8 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
         this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
+
+        isAllowMobileNetwork = false;
     }
 
     public void start(){
@@ -106,8 +122,10 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
             httpURLConnection.setDoOutput(true);
             httpURLConnection.setConnectTimeout(5000);
             httpURLConnection.connect();
+            //TODO 当网址存在重定向时，使用重定向
             if(httpURLConnection.getResponseCode()== HttpURLConnection.HTTP_OK){
                 fileSize = httpURLConnection.getContentLength();
+
 
                 File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator+activity.getPackageName()+ File.separator+ FileDownloaderUtil.TEMP_DIR);
                 if(!dir.exists()){
@@ -132,7 +150,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                 for(int i = 0;i<sub_thread;i++){
                     if(i<sub_thread-1){
                         subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
-                                i * range, i * range + (range - 1), savePath, new IDownloadProgressCallback() {
+                                i * range, i * range + (range - 1), savePath,isAllowMobileNetwork, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
@@ -140,7 +158,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                         }));
                     }else{
                         subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
-                                i * range, fileSize, savePath, new IDownloadProgressCallback() {
+                                i * range, fileSize, savePath,isAllowMobileNetwork, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
@@ -190,7 +208,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                  */
                 if(downloadedSize<fileSize){
                     if(iErrorcallback!=null){
-                        iErrorcallback.noFinishDownload();
+                        iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_DISABLE);
                     }
                 }else{
                     if(savePath.toLowerCase().endsWith("doc") || savePath.toLowerCase().endsWith("docx")){
@@ -211,7 +229,7 @@ public class MultiThreadAsyncFileDownloader extends AsyncTask<String,Long,Void> 
                 updateDialog.dismiss();
             }
             if(iErrorcallback!=null){
-                iErrorcallback.noFinishDownload();
+                iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_NORMAL);
             }
         }
     }

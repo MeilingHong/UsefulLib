@@ -35,9 +35,10 @@ public class SingleDownloadThread extends Thread {
     private String url_string;
 
     private Context mContext;
+    private boolean isAllowMobileNetwork;
 
     public SingleDownloadThread(Context mContext, String filePath, long fileSumSize, int sumThreadNumber, int threadNumber,
-                                long startPosition, long endPosition, String localSavePath, IDownloadProgressCallback callback) {
+                                long startPosition, long endPosition, String localSavePath,boolean isAllowMobile, IDownloadProgressCallback callback) {
         this.mContext = mContext;
         url_string = filePath;
         sumSize = fileSumSize;
@@ -48,10 +49,12 @@ public class SingleDownloadThread extends Thread {
         currentPosition = startPosition;
         this.callback = callback;
         savePath = localSavePath;
+
+        isAllowMobileNetwork = isAllowMobile;
     }
 
     public SingleDownloadThread(Context mContext, String filePath, long fileSumSize, int sumThreadNumber, int threadNumber,
-                                long startPosition, long endPosition, String localSavePath, IDownloadProgressCallback callback
+                                long startPosition, long endPosition, String localSavePath,boolean isAllowMobile, IDownloadProgressCallback callback
             , IDownloadErrorCallback errorCallback) {
         this.mContext = mContext;
         url_string = filePath;
@@ -64,6 +67,8 @@ public class SingleDownloadThread extends Thread {
         this.callback = callback;
         savePath = localSavePath;
         this.errorCallback = errorCallback;
+
+        isAllowMobileNetwork = isAllowMobile;
     }
 
     public void setBreakPointFlag(boolean flag) {
@@ -258,9 +263,9 @@ public class SingleDownloadThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
-            if ((currentNetworkType != NetCheckUtil.checkNetworkType(mContext) &&
-                    NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext)) ||
-                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext)) {
+            if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
+                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
+                    (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
                 //TODO 当网络环境改变
                 reDownload();
                 try {
@@ -275,10 +280,9 @@ public class SingleDownloadThread extends Thread {
                 } catch (IOException e2) {
                     e2.printStackTrace();
                 }
-                Log.e("MainA", "return ----- redo    " + NetCheckUtil.checkNetworkType(mContext));
                 return;
             } else {
-                Log.e("MainA", "IOException   reDownload  undo    " + NetCheckUtil.checkNetworkType(mContext));
+                Log.e("MainA", "IOException   reDownload  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
             }
         } finally {
             try {
@@ -373,9 +377,9 @@ public class SingleDownloadThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
-            if ((currentNetworkType != NetCheckUtil.checkNetworkType(mContext) &&
-                    NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext)) ||
-                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext)) {
+            if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
+                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
+                    (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
                 //TODO 当网络环境改变
                 download();
                 try {
@@ -390,10 +394,9 @@ public class SingleDownloadThread extends Thread {
                 } catch (IOException e2) {
                     e2.printStackTrace();
                 }
-                Log.e("MainA", "return  +++++  redo    " + NetCheckUtil.checkNetworkType(mContext));
                 return;
             } else {
-                Log.e("MainA", "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext));
+                Log.e("MainA", "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
             }
         } finally {
             try {

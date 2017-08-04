@@ -44,6 +44,11 @@ public interface IErrorCode {
     int ERROR_NETWORK_MOBILE_FORBID_BY_USER = 34;
     int ERROR_NETWORK_CHANGE = 35;
     int ERROR_HTTP_ERROR = 36;
+
+    int ERROR_UNFINISH_NORMAL = 37;
+    int ERROR_UNFINISH_DISABLE = 38;
+
+
     /**
      * VIBRATE
      * MOUNT_UNMOUNT_FILESYSTEMS

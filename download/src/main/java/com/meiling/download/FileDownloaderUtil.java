@@ -40,4 +40,13 @@ public class FileDownloaderUtil {
                 , "application/vnd.android.package-archive");
         context.startActivity(intent);
     }
+
+    public static void updateAppVersion(Context context,String fileName){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory().getAbsolutePath()+
+                        File.separator+context.getPackageName()+ File.separator+TEMP_DIR+ File.separator
+                        +fileName))
+                , "application/vnd.android.package-archive");
+        context.startActivity(intent);
+    }
 }

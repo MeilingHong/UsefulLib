@@ -208,12 +208,12 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 /**
                  *
                  */
-                File apk = new File(dir, FileDownloaderUtil.getVersionApk());
+                File apk = new File(dir, FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                 this.savePath = apk.getAbsolutePath();
                 if(apk.exists()){
-                    apk.renameTo(new File(dir,"temp"+FileDownloaderUtil.getVersionApk()));
+                    apk.renameTo(new File(dir,"temp"+FileNameHash.getSHA1String(netUrl+fileSize)+".apk"));
                     apk.delete();
-                    apk = new File(dir,FileDownloaderUtil.getVersionApk());
+                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     apk.createNewFile();
                     RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
                     randomAccessFile.setLength(fileSize);
@@ -223,7 +223,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 for(int i = 0;i<sub_thread;i++){
                     if(i<sub_thread-1){
                         subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
-                                i * range, i * range + (range - 1), savePath, new IDownloadProgressCallback() {
+                                i * range, i * range + (range - 1), savePath,isAllowMobileNetwork, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
@@ -231,7 +231,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                         },iErrorcallback));
                     }else{
                         subThreadList.add(new SingleDownloadThread(activity,netUrl, fileSize, sub_thread, i,
-                                i * range, fileSize, savePath, new IDownloadProgressCallback() {
+                                i * range, fileSize, savePath,isAllowMobileNetwork, new IDownloadProgressCallback() {
                             @Override
                             public void threadProgress(int id,long progress) {
                                 publishProgress(progress);
@@ -285,19 +285,19 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
-            if(iErrorcallback!=null){
-                iErrorcallback.onError(IErrorCode.ERROR_MALFORMEDURL);
-            }
+//            if(iErrorcallback!=null){
+//                iErrorcallback.onError(IErrorCode.ERROR_MALFORMEDURL);
+//            }
         } catch (ProtocolException e) {
             e.printStackTrace();
-            if(iErrorcallback!=null){
-                iErrorcallback.onError(IErrorCode.ERROR_PROTOCOL);
-            }
+//            if(iErrorcallback!=null){
+//                iErrorcallback.onError(IErrorCode.ERROR_PROTOCOL);
+//            }
         } catch (IOException e) {
             e.printStackTrace();
-            if(iErrorcallback!=null){
-                iErrorcallback.onError(IErrorCode.ERROR_SERVER_CONNECTION);
-            }
+//            if(iErrorcallback!=null){
+//                iErrorcallback.onError(IErrorCode.ERROR_SERVER_CONNECTION);
+//            }
         }
         return null;
     }
@@ -329,11 +329,11 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
                 if(downloadedSize<fileSize){
                     if(iErrorcallback!=null){
-                        iErrorcallback.noFinishDownload();
+                        iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_DISABLE);
                     }
                     Log.e("MainA","onPostExecute   noFinishDownload ");
                 }else{
-                    FileDownloaderUtil.updateAppVersion(activity);
+                    FileDownloaderUtil.updateAppVersion(activity,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     UpdateUtil.updateCheckTime(activity,netUrl);
                     Log.e("MainA","onPostExecute   updateAppVersion ");
                 }
@@ -343,7 +343,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 updateDialog.dismiss();
             }
             if(iErrorcallback!=null){
-                iErrorcallback.noFinishDownload();
+                iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_NORMAL);
             }
 
             Log.e("MainA","onPostExecute    subThreadList.size()<0   noFinishDownload");

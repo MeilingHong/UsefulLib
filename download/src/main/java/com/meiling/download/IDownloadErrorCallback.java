@@ -5,6 +5,6 @@ package com.meiling.download;
  */
 public interface IDownloadErrorCallback {
     void onError(int errorCode);
-    void noFinishDownload();
+    void noFinishDownload(int netType);
     void stopByUser();
 }
