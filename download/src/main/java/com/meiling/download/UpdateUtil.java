@@ -9,8 +9,10 @@ import android.content.SharedPreferences;
 
 public class UpdateUtil {
 
-    private static final String PREFERENCES_FILE = "base_setting";
+    private static final String PREFERENCES_FILE = "base_file_download_info";
     private static final String UPDATE_TIME = "update_time";
+
+    public static final String SPLIT = ";";
 
     public static String getUpdateTime(Context activity,String url) {
         return activity.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE).getString(UPDATE_TIME+"_"+url,"");
@@ -42,5 +44,17 @@ public class UpdateUtil {
             }
         }
         return bool;
+    }
+
+    //***************************************************************************
+
+    public static String getFileInfoValue(Context activity,String key) {
+        return activity.getSharedPreferences(PREFERENCES_FILE, Context.MODE_PRIVATE).getString(key,"");
+    }
+
+    public static void setFileInfoValue(Context activity,String key,String value) {
+        SharedPreferences.Editor editor = activity.getSharedPreferences(PREFERENCES_FILE,Context.MODE_PRIVATE).edit();
+        editor.putString(key, value);
+        editor.commit();
     }
 }

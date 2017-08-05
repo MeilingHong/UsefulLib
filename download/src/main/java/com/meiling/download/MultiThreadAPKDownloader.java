@@ -163,6 +163,10 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
     @Override
     protected void onProgressUpdate(Long... values) {
         downloadedSize = 0;
+
+        /**
+         * TODO 覆盖文件
+         */
         if(subThreadList!=null && subThreadList.size()>1){
             for(int i = 0;i<sub_thread;i++){
                 if(subThreadList.get(i)!=null) {
@@ -176,8 +180,18 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         /**
          * 更新UI显示的百分比
          */
+//        if(icallback!=null){
+//            icallback.updateProgress(((int)((downloadedSize*100)/fileSize)),((downloadedSize*100)/fileSize)+"%");
+//        }
+
+        /**
+         * TODO 使用相同的文件
+         */
         if(icallback!=null){
             icallback.updateProgress(((int)((downloadedSize*100)/fileSize)),((downloadedSize*100)/fileSize)+"%");
+            Log.e("MainA","downloadedSize:"+downloadedSize);
+            Log.e("MainA","fileSize:"+fileSize);
+            Log.e("MainA","百分比:"+(((downloadedSize*100)/fileSize)+"%"));
         }
     }
 
@@ -206,18 +220,33 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                     dir.mkdirs();
                 }
                 /**
-                 *
+                 * TODO 每次下载覆盖重复的文件
+                 */
+//                File apk = new File(dir, FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
+//                this.savePath = apk.getAbsolutePath();
+//                if(apk.exists()){
+//                    apk.renameTo(new File(dir,"temp"+FileNameHash.getSHA1String(netUrl+fileSize)+".apk"));
+//                    apk.delete();
+//                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
+//                    apk.createNewFile();
+//                    RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
+//                    randomAccessFile.setLength(fileSize);
+//                }
+
+                /**
+                 * TODO 使用相同的文件
                  */
                 File apk = new File(dir, FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                 this.savePath = apk.getAbsolutePath();
-                if(apk.exists()){
-                    apk.renameTo(new File(dir,"temp"+FileNameHash.getSHA1String(netUrl+fileSize)+".apk"));
-                    apk.delete();
-                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
+                if(!apk.exists()){
+//                    apk.renameTo(new File(dir,"temp"+FileNameHash.getSHA1String(netUrl+fileSize)+".apk"));
+//                    apk.delete();
+//                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     apk.createNewFile();
-                    RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
-                    randomAccessFile.setLength(fileSize);
                 }
+
+                RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
+                randomAccessFile.setLength(fileSize);
 
                 int range = fileSize/sub_thread;
                 for(int i = 0;i<sub_thread;i++){
@@ -304,6 +333,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
     protected HttpURLConnection createConnection(String url) throws IOException {
         String encodedUrl = Uri.encode(url, "@#&=*+-_.,:!?()/~\'%");
+        netUrl = encodedUrl;
         HttpURLConnection conn = (HttpURLConnection)(new URL(encodedUrl)).openConnection();
         conn.setConnectTimeout(5000);
         conn.setReadTimeout(20000);

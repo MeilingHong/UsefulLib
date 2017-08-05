@@ -76,6 +76,7 @@ public class SingleDownloadThread extends Thread {
     }
 
     public long getDownloadLength() {
+        Log.e("MainA","threadNumber:"+threadNumber+"\nDownloadLength: "+(currentPosition - start));
         return currentPosition - start;
     }
 
@@ -184,7 +185,7 @@ public class SingleDownloadThread extends Thread {
 //        }
 
         //TODO
-        reDownload();
+        download();
     }
 
     public void download() {
@@ -192,6 +193,13 @@ public class SingleDownloadThread extends Thread {
         InputStream inputStream = null;
         try {
             currentNetworkType = NetCheckUtil.checkNetworkType(mContext);
+            String tempInfo = UpdateUtil.getFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize));
+            if(tempInfo!=null &&//TODO 不为空
+                    !"".equals(tempInfo) && //TODO 不为默认值
+                    tempInfo.split(UpdateUtil.SPLIT).length==6){//长度为设置的长度
+                currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
+            }
+            Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n"+"end:"+end);
             URL url = new URL(url_string);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setRequestMethod(METHOD_GET);
@@ -247,13 +255,20 @@ public class SingleDownloadThread extends Thread {
                 long tempSum = 0;
 
                 while ((len = inputStream.read(cache)) != -1) {
-
+                    //TODO 保存断点规则：Key = sha1(url+文件总大小)
+                    //TODO 保存断点规则：Value = 子线程总数;当前线程编号;文件总大小;起点位置;终点位置;当前位置
                     currentPosition += len;
                     tempSum += len;
                     file.write(cache, 0, len);
                     if (callback != null) {
                         callback.threadProgress(threadNumber, tempSum);
                     }
+                    //TODO 记录下当前线程的断点
+                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize),
+                            sumThreadNumber+UpdateUtil.SPLIT+threadNumber+UpdateUtil.SPLIT+
+                            sumSize+UpdateUtil.SPLIT+start+UpdateUtil.SPLIT+
+                            end+UpdateUtil.SPLIT+currentPosition
+                    );
                 }
             } else {
             }
@@ -267,7 +282,7 @@ public class SingleDownloadThread extends Thread {
                     NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
                     (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
                 //TODO 当网络环境改变
-                reDownload();
+                download();
                 try {
                     if (file != null) {
                         file.close();
@@ -301,116 +316,122 @@ public class SingleDownloadThread extends Thread {
     }
 
 
-    public void reDownload() {
-        RandomAccessFile file = null;
-        InputStream inputStream = null;
-        try {
-            currentNetworkType = NetCheckUtil.checkNetworkType(mContext);
-            URL url = new URL(url_string);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setRequestMethod(METHOD_GET);
-            httpURLConnection.setDoInput(true);
-//            httpURLConnection.setDoOutput(true);
-            httpURLConnection.setConnectTimeout(5000);
-            httpURLConnection.addRequestProperty("Range", "bytes=" + currentPosition + "-" + end);
-            httpURLConnection.connect();
-
-            /**
-             * TODO 若地址出现重定向，则在进行有限次数的重定向处理
-             */
-            int code = httpURLConnection.getResponseCode();
-            for (int redirectCount = 0; code / 100 == 3 && redirectCount < 5; ++redirectCount) {
-                httpURLConnection = this.createConnection(httpURLConnection.getHeaderField("Location"));
-                code = httpURLConnection.getResponseCode();
-            }
-            if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_PARTIAL) {
-                int streamSize = httpURLConnection.getContentLength();
-                if (streamSize >= sumSize) {
-                    /**
-                     * 不支持多线程下载
-                     */
-                    if (threadNumber > 0) {
-                        httpURLConnection.getInputStream().close();
-                        httpURLConnection.disconnect();
-                        return;
-                    } else {
-                        start = 0;
-                        end = httpURLConnection.getContentLength();
-                    }
-                } else {
-                    /**
-                     * 支持多线程下载
-                     */
-                }
-
-                File tempFile = new File(savePath);
-                file = new RandomAccessFile(savePath, "rwd");
-                if (!tempFile.exists()) {
-                    tempFile.createNewFile();
-                    file.setLength(sumSize);
-                }
-                file.seek(currentPosition);
-
-
-                inputStream = httpURLConnection.getInputStream();
-                /**
-                 * 若需要断点续传，则需要保存当前
-                 */
-                byte[] cache = new byte[4096];//缓存
-                int len = 0;
-                long tempSum = 0;
-
-                while ((len = inputStream.read(cache)) != -1) {
-
-                    currentPosition += len;
-                    tempSum += len;
-                    file.write(cache, 0, len);
-                    if (callback != null) {
-                        callback.threadProgress(threadNumber, tempSum);
-                    }
-                }
-            } else {
-            }
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-            Log.e("MainA", "MalformedURLException   reDownload " + threadNumber + "      " + url_string);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
-            if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
-                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
-                    (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
-                //TODO 当网络环境改变
-                download();
-                try {
-                    if (file != null) {
-                        file.close();
-                        file = null;
-                    }
-                    if (inputStream != null) {
-                        inputStream.close();
-                        inputStream = null;
-                    }
-                } catch (IOException e2) {
-                    e2.printStackTrace();
-                }
-                return;
-            } else {
-                Log.e("MainA", "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
-            }
-        } finally {
-            try {
-                if (file != null) {
-                    file.close();
-                    file = null;
-                }
-                if (inputStream != null) {
-                    inputStream.close();
-                    inputStream = null;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public void reDownload() {
+//        RandomAccessFile file = null;
+//        InputStream inputStream = null;
+//        try {
+//            currentNetworkType = NetCheckUtil.checkNetworkType(mContext);
+//            URL url = new URL(url_string);
+//            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+//            httpURLConnection.setRequestMethod(METHOD_GET);
+//            httpURLConnection.setDoInput(true);
+////            httpURLConnection.setDoOutput(true);
+//            httpURLConnection.setConnectTimeout(5000);
+//            httpURLConnection.addRequestProperty("Range", "bytes=" + currentPosition + "-" + end);
+//            httpURLConnection.connect();
+//
+//            /**
+//             * TODO 若地址出现重定向，则在进行有限次数的重定向处理
+//             */
+//            int code = httpURLConnection.getResponseCode();
+//            for (int redirectCount = 0; code / 100 == 3 && redirectCount < 5; ++redirectCount) {
+//                httpURLConnection = this.createConnection(httpURLConnection.getHeaderField("Location"));
+//                code = httpURLConnection.getResponseCode();
+//            }
+//            if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_PARTIAL) {
+//                int streamSize = httpURLConnection.getContentLength();
+//                if (streamSize >= sumSize) {
+//                    /**
+//                     * 不支持多线程下载
+//                     */
+//                    if (threadNumber > 0) {
+//                        httpURLConnection.getInputStream().close();
+//                        httpURLConnection.disconnect();
+//                        return;
+//                    } else {
+//                        start = 0;
+//                        end = httpURLConnection.getContentLength();
+//                    }
+//                } else {
+//                    /**
+//                     * 支持多线程下载
+//                     */
+//                }
+//
+//                File tempFile = new File(savePath);
+//                file = new RandomAccessFile(savePath, "rwd");
+//                if (!tempFile.exists()) {
+//                    tempFile.createNewFile();
+//                    file.setLength(sumSize);
+//                }
+//                file.seek(currentPosition);
+//
+//
+//                inputStream = httpURLConnection.getInputStream();
+//                /**
+//                 * 若需要断点续传，则需要保存当前
+//                 */
+//                byte[] cache = new byte[4096];//缓存
+//                int len = 0;
+//                long tempSum = 0;
+//
+//                while ((len = inputStream.read(cache)) != -1) {
+//
+//                    currentPosition += len;
+//                    tempSum += len;
+//                    file.write(cache, 0, len);
+//                    if (callback != null) {
+//                        callback.threadProgress(threadNumber, tempSum);
+//                    }
+//                    //TODO
+//                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize),
+//                            sumThreadNumber+UpdateUtil.SPLIT+threadNumber+UpdateUtil.SPLIT+
+//                                    sumSize+UpdateUtil.SPLIT+start+UpdateUtil.SPLIT+
+//                                    end+UpdateUtil.SPLIT+currentPosition
+//                    );
+//                }
+//            } else {
+//            }
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//            Log.e("MainA", "MalformedURLException   reDownload " + threadNumber + "      " + url_string);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
+//            if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
+//                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
+//                    (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
+//                //TODO 当网络环境改变
+//                download();
+//                try {
+//                    if (file != null) {
+//                        file.close();
+//                        file = null;
+//                    }
+//                    if (inputStream != null) {
+//                        inputStream.close();
+//                        inputStream = null;
+//                    }
+//                } catch (IOException e2) {
+//                    e2.printStackTrace();
+//                }
+//                return;
+//            } else {
+//                Log.e("MainA", "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
+//            }
+//        } finally {
+//            try {
+//                if (file != null) {
+//                    file.close();
+//                    file = null;
+//                }
+//                if (inputStream != null) {
+//                    inputStream.close();
+//                    inputStream = null;
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 }

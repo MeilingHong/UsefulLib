@@ -132,19 +132,34 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Void> {
                     dir.mkdirs();
                 }
                 /**
-                 *
+                 * 每一次都重新下载
                  */
-                final String fileName = netUrl.substring(netUrl.lastIndexOf("/")+1);
+//                final String fileName = netUrl.substring(netUrl.lastIndexOf("/")+1);
+//                File apk = new File(dir, fileName);
+//                this.savePath = apk.getAbsolutePath();
+//                if(apk.exists()){
+//                    apk.renameTo(new File(dir,"temp_"+fileName));
+//                    apk.delete();
+//                    apk = new File(dir,fileName);
+//                    apk.createNewFile();
+//                    RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
+//                    randomAccessFile.setLength(fileSize);
+//                }
+                /**
+                 * 进行断点下载
+                 */
+                final String fileName = FileNameHash.getSHA1String(netUrl+fileSize)//TODO 用于防止重复---（实际上仍存在重复的可能，虽然几率比较小）
+                        +netUrl.substring(netUrl.lastIndexOf("/")+1);
                 File apk = new File(dir, fileName);
                 this.savePath = apk.getAbsolutePath();
-                if(apk.exists()){
-                    apk.renameTo(new File(dir,"temp_"+fileName));
-                    apk.delete();
-                    apk = new File(dir,fileName);
+                if(!apk.exists()){
+//                    apk.renameTo(new File(dir,"temp_"+fileName));
+//                    apk.delete();
+//                    apk = new File(dir,fileName);
                     apk.createNewFile();
-                    RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
-                    randomAccessFile.setLength(fileSize);
                 }
+                RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
+                randomAccessFile.setLength(fileSize);
 
                 int range = fileSize/sub_thread;
                 for(int i = 0;i<sub_thread;i++){
