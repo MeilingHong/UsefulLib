@@ -76,7 +76,7 @@ public class SingleDownloadThread extends Thread {
     }
 
     public long getDownloadLength() {
-        Log.e("MainA","threadNumber:"+threadNumber+"\nDownloadLength: "+(currentPosition - start));
+//        Log.e("MainA","threadNumber:"+threadNumber+"\nDownloadLength: "+(currentPosition - start));
         return currentPosition - start;
     }
 
@@ -198,7 +198,10 @@ public class SingleDownloadThread extends Thread {
                     !"".equals(tempInfo) && //TODO 不为默认值
                     tempInfo.split(UpdateUtil.SPLIT).length==6){//长度为设置的长度
                 currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
-                Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n------start:"+start+"\nend:"+end);
+                Log.e("MainA","threadNumber:"+threadNumber+"\n" +
+                        "currentPosition:"+currentPosition+"\n" +
+                        "----------start:"+start+"\n" +
+                        "************end:"+end);
                 if(currentPosition<start){
                     currentPosition=start;
                 }else if(currentPosition>=end){
