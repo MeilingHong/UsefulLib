@@ -189,9 +189,6 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
          */
         if(icallback!=null){
             icallback.updateProgress(((int)((downloadedSize*100)/fileSize)),((downloadedSize*100)/fileSize)+"%");
-            Log.e("MainA","downloadedSize:"+downloadedSize);
-            Log.e("MainA","fileSize:"+fileSize);
-            Log.e("MainA","百分比:"+(((downloadedSize*100)/fileSize)+"%"));
         }
     }
 
@@ -214,7 +211,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
             if(code== HttpURLConnection.HTTP_OK || code== HttpURLConnection.HTTP_PARTIAL){
                 fileSize = httpURLConnection.getContentLength();
-
+                Log.e("MainA","fileSize:"+fileSize);
                 File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator+activity.getPackageName()+ File.separator+ FileDownloaderUtil.TEMP_DIR);
                 if(!dir.exists()){
                     dir.mkdirs();
@@ -291,10 +288,8 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                             (subThreadList.get(1)!=null? subThreadList.get(1).isAlive():true) &&
                             (subThreadList.get(2)!=null? subThreadList.get(2).isAlive():true)
                             ){
-                        Log.e("MainA",""+"   ....................1111   "+NetCheckUtil.checkNetworkType(activity));
                         break;
                     }else{
-                        Log.e("MainA",""+"   ....................2222   "+NetCheckUtil.checkNetworkType(activity));
                     }
 
                 }
@@ -351,7 +346,6 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                 if(iErrorcallback!=null){
                     iErrorcallback.stopByUser();
                 }
-                Log.e("MainA","onPostExecute   stopByUser ");
             }else{
                 if(updateDialog!=null && updateDialog.isShowing()){
                     updateDialog.dismiss();
@@ -361,11 +355,9 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                     if(iErrorcallback!=null){
                         iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_DISABLE);
                     }
-                    Log.e("MainA","onPostExecute   noFinishDownload ");
                 }else{
                     FileDownloaderUtil.updateAppVersion(activity,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     UpdateUtil.updateCheckTime(activity,netUrl);
-                    Log.e("MainA","onPostExecute   updateAppVersion ");
                 }
             }
         }else{
@@ -375,8 +367,6 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
             if(iErrorcallback!=null){
                 iErrorcallback.noFinishDownload(IErrorCode.ERROR_UNFINISH_NORMAL);
             }
-
-            Log.e("MainA","onPostExecute    subThreadList.size()<0   noFinishDownload");
         }
     }
 

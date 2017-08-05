@@ -193,13 +193,23 @@ public class SingleDownloadThread extends Thread {
         InputStream inputStream = null;
         try {
             currentNetworkType = NetCheckUtil.checkNetworkType(mContext);
-            String tempInfo = UpdateUtil.getFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize));
+            String tempInfo = UpdateUtil.getFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize+"_"+threadNumber));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
             if(tempInfo!=null &&//TODO 不为空
                     !"".equals(tempInfo) && //TODO 不为默认值
                     tempInfo.split(UpdateUtil.SPLIT).length==6){//长度为设置的长度
                 currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
+                Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n------start:"+start+"\nend:"+end);
+                if(currentPosition<start){
+                    currentPosition=start;
+                }else if(currentPosition>=end){
+                    currentPosition = end;
+                    return;
+                }else{
+                    currentPosition=start;
+                }
+            }else{
+                Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n------start:"+start+"\nend:"+end);
             }
-            Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n"+"end:"+end);
             URL url = new URL(url_string);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
             httpURLConnection.setRequestMethod(METHOD_GET);
@@ -264,11 +274,15 @@ public class SingleDownloadThread extends Thread {
                         callback.threadProgress(threadNumber, tempSum);
                     }
                     //TODO 记录下当前线程的断点
-                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize),
+                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize+"_"+threadNumber),
                             sumThreadNumber+UpdateUtil.SPLIT+threadNumber+UpdateUtil.SPLIT+
                             sumSize+UpdateUtil.SPLIT+start+UpdateUtil.SPLIT+
                             end+UpdateUtil.SPLIT+currentPosition
                     );
+                    //TODO 添加控制，避免一直下载
+                    if(currentPosition>=end){
+                        break;
+                    }
                 }
             } else {
             }
@@ -384,7 +398,7 @@ public class SingleDownloadThread extends Thread {
 //                        callback.threadProgress(threadNumber, tempSum);
 //                    }
 //                    //TODO
-//                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize),
+//                    UpdateUtil.setFileInfoValue(mContext,FileNameHash.getSHA1String(url_string+sumSize+"_"+threadNumber),
 //                            sumThreadNumber+UpdateUtil.SPLIT+threadNumber+UpdateUtil.SPLIT+
 //                                    sumSize+UpdateUtil.SPLIT+start+UpdateUtil.SPLIT+
 //                                    end+UpdateUtil.SPLIT+currentPosition
