@@ -76,7 +76,11 @@ public class SingleDownloadThread extends Thread {
     }
 
     public long getDownloadLength() {
-//        Log.e("MainA","threadNumber:"+threadNumber+"\nDownloadLength: "+(currentPosition - start));
+//        Log.e("MainA"+threadNumber,"------------\n" +
+//                "threadNumber:"+threadNumber+"\nDownloadLength: "+(currentPosition - start)+"\n" +
+//                "currentPosition:"+currentPosition+"\n" +
+//                "----------start:"+start+"\n" +
+//                "************end:"+end);
         return currentPosition - start;
     }
 
@@ -162,10 +166,10 @@ public class SingleDownloadThread extends Thread {
 //            }
 //        } catch (MalformedURLException e) {
 //            e.printStackTrace();
-//            Log.e("MainA","MalformedURLException   run "+sumThreadNumber+"      "+url_string);
+//            Log.e("MainA"+threadNumber,"MalformedURLException   run "+sumThreadNumber+"      "+url_string);
 //        } catch (IOException e) {
 //            e.printStackTrace();
-//            Log.e("MainA","IOException   run "+sumThreadNumber+"      "+url_string);
+//            Log.e("MainA"+threadNumber,"IOException   run "+sumThreadNumber+"      "+url_string);
 //            if(currentNetworkType!=NetCheckUtil.checkNetworkType(mContext)){
 //                //TODO 当网络环境改变
 //                reDownload();
@@ -198,20 +202,25 @@ public class SingleDownloadThread extends Thread {
                     !"".equals(tempInfo) && //TODO 不为默认值
                     tempInfo.split(UpdateUtil.SPLIT).length==6){//长度为设置的长度
                 currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
-                Log.e("MainA","threadNumber:"+threadNumber+"\n" +
-                        "currentPosition:"+currentPosition+"\n" +
-                        "----------start:"+start+"\n" +
-                        "************end:"+end);
+//                Log.e("MainA"+threadNumber,"threadNumber:"+threadNumber+"\n" +
+//                        "currentPosition:"+currentPosition+"\n" +
+//                        "----------start:"+start+"\n" +
+//                        "************end:"+end);
                 if(currentPosition<start){
                     currentPosition=start;
                 }else if(currentPosition>=end){
                     currentPosition = end;
                     return;
                 }else{
-                    currentPosition=start;
+//                    currentPosition=start;//TODO 这里不要进行这个操作，否则当重新启动时，上一次的进度会因为这个操作而被覆盖掉（加上这句相当于重新下载）
+                    //TODO 对于需要定制的话，可以考虑在这里加上一个boolean标志，通过判断这个标志来确定是否需要进行重新下载
                 }
             }else{
-                Log.e("MainA","threadNumber:"+threadNumber+"\ncurrentPosition:"+currentPosition+"\n------start:"+start+"\nend:"+end);
+//                Log.e("MainA"+threadNumber,
+//                        "threadNumber:"+threadNumber+"\n" +
+//                        "currentPosition:"+currentPosition+"\n" +
+//                        "----------start:"+start+"\n" +
+//                        "++++++++++++end:"+end);
             }
             URL url = new URL(url_string);
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
@@ -286,15 +295,21 @@ public class SingleDownloadThread extends Thread {
                     if(currentPosition>=end){
                         break;
                     }
+                    //TODO 降低Log的输出速度
+//                    try {
+//                        Thread.sleep(250);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             } else {
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();
-            Log.e("MainA", "MalformedURLException   reDownload " + threadNumber + "      " + url_string);
+//            Log.e("MainA"+threadNumber, "MalformedURLException   download " + threadNumber + "      " + url_string);
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
+//            Log.e("MainA"+threadNumber, "IOException   download " + threadNumber + "      " + url_string);
             if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
                     NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
                     (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
@@ -314,7 +329,7 @@ public class SingleDownloadThread extends Thread {
                 }
                 return;
             } else {
-                Log.e("MainA", "IOException   reDownload  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
+//                Log.e("MainA"+threadNumber, "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
             }
         } finally {
             try {
@@ -411,10 +426,10 @@ public class SingleDownloadThread extends Thread {
 //            }
 //        } catch (MalformedURLException e) {
 //            e.printStackTrace();
-//            Log.e("MainA", "MalformedURLException   reDownload " + threadNumber + "      " + url_string);
+//            Log.e("MainA"+threadNumber, "MalformedURLException   reDownload " + threadNumber + "      " + url_string);
 //        } catch (IOException e) {
 //            e.printStackTrace();
-//            Log.e("MainA", "IOException   reDownload " + threadNumber + "      " + url_string);
+//            Log.e("MainA"+threadNumber, "IOException   reDownload " + threadNumber + "      " + url_string);
 //            if (currentNetworkType != NetCheckUtil.checkNetworkType(mContext) ||
 //                    NetCheckUtil.TYPE_WIFI==NetCheckUtil.checkNetworkType(mContext) ||
 //                    (isAllowMobileNetwork && NetCheckUtil.TYPE_MOBILE==NetCheckUtil.checkNetworkType(mContext))) {
@@ -434,7 +449,7 @@ public class SingleDownloadThread extends Thread {
 //                }
 //                return;
 //            } else {
-//                Log.e("MainA", "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
+//                Log.e("MainA"+threadNumber, "IOException   download  undo    " + NetCheckUtil.checkNetworkType(mContext) +"   currentNetworkType:"+ currentNetworkType);
 //            }
 //        } finally {
 //            try {

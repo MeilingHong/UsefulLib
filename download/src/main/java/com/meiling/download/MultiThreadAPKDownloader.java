@@ -187,6 +187,8 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
         /**
          * TODO 使用相同的文件
          */
+//        Log.e("MainA","-------\n" +
+//                "downloadedSize:"+downloadedSize+"     ---fileSize："+fileSize);
         if(icallback!=null){
             icallback.updateProgress(((int)((downloadedSize*100)/fileSize)),((downloadedSize*100)/fileSize)+"%");
         }
@@ -211,7 +213,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 
             if(code== HttpURLConnection.HTTP_OK || code== HttpURLConnection.HTTP_PARTIAL){
                 fileSize = httpURLConnection.getContentLength();
-                Log.e("MainA","fileSize:"+fileSize);
+//                Log.e("MainA","fileSize:"+fileSize);
                 File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator+activity.getPackageName()+ File.separator+ FileDownloaderUtil.TEMP_DIR);
                 if(!dir.exists()){
                     dir.mkdirs();
@@ -240,6 +242,17 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
 //                    apk.delete();
 //                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     apk.createNewFile();
+                    //TODO 若文件不存在了，则需要创建文件，而且同步清除该文件的断点记录
+                    for(int i = 0;i<sub_thread;i++){
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//TODO 不为空
+                                !"".equals(tempInfo) && //TODO 不为默认值
+                                tempInfo.split(UpdateUtil.SPLIT).length==6) {
+                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            UpdateUtil.setFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i),
+                                    "");
+                        }
+                    }
                 }
 
                 RandomAccessFile randomAccessFile = new RandomAccessFile(apk,"rwd");
