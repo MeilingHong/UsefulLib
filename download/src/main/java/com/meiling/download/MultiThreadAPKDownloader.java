@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Created by Administrator on 2016/9/21 0021.
  */
-public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
+public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
     /**
      * 可定义得更大
      */
@@ -195,7 +195,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
     }
 
     @Override
-    protected Void doInBackground(String... strings) {
+    protected Integer doInBackground(String... strings) {
 //            publishProgress();
         try{
             URL url = new URL(netUrl);
@@ -252,6 +252,24 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
                             UpdateUtil.setFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i),
                                     "");
                         }
+                    }
+                }else{
+                    int count = 0;
+                    for(int i = 0;i<sub_thread;i++){
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//TODO 不为空
+                                !"".equals(tempInfo) && //TODO 不为默认值
+                                tempInfo.split(UpdateUtil.SPLIT).length==6) {
+                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            long currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
+                            long end = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[4]);
+                            if(currentPosition>=end){
+                                count++;
+                            }
+                        }
+                    }
+                    if(count==sub_thread){
+                        return IErrorCode.CODE_NORMAL_FINISH_DOWNLOAD;
                     }
                 }
 
@@ -349,9 +367,17 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Void> {
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
+    protected void onPostExecute(Integer aVoid) {
         super.onPostExecute(aVoid);
-        if(subThreadList.size()>0){
+        if(aVoid!=null && IErrorCode.CODE_NORMAL_FINISH_DOWNLOAD==aVoid.intValue()){
+            if(icallback!=null){
+                icallback.updateProgress(100,"100%");
+            }
+            FileDownloaderUtil.updateAppVersion(activity,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
+//            UpdateUtil.updateCheckTime(activity,netUrl);
+            return;
+        }
+        if(subThreadList!=null && subThreadList.size()>0){
             if(stopFlag){
                 if(updateDialog!=null && updateDialog.isShowing()){
                     updateDialog.dismiss();

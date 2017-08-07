@@ -4,7 +4,7 @@ apply plugin: 'com.android.library'
 ext {
     PUBLISH_GROUP_ID = 'com.meiling.download'
     PUBLISH_ARTIFACT_ID = 'downloader'
-    PUBLISH_VERSION = '1.1'
+    PUBLISH_VERSION = '1.2'
 }
 //TODO 降低编译版本，兼容使用HttpClient的APP
 android {

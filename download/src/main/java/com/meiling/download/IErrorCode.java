@@ -48,7 +48,7 @@ public interface IErrorCode {
     int ERROR_UNFINISH_NORMAL = 37;
     int ERROR_UNFINISH_DISABLE = 38;
 
-
+    int CODE_NORMAL_FINISH_DOWNLOAD = 39;
     /**
      * VIBRATE
      * MOUNT_UNMOUNT_FILESYSTEMS
