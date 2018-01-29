@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +40,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
     private int fileSize;
     private long downloadedSize;
     private IDownloadCallback icallback;
-    IDownloadErrorCallback iErrorcallback;
+    private IDownloadErrorCallback iErrorcallback;
 
     private Dialog updateDialog;
     private Context activity;
@@ -52,6 +51,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
         this.icallback = icallback;
+        this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
 
@@ -63,6 +63,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
         this.netUrl = netUrl;
         subThreadList = new ArrayList<SingleDownloadThread>();
         this.icallback = icallback;
+        this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
 
@@ -152,7 +153,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
                 fileSize = httpURLConnection.getContentLength();
 
 
-                File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator+activity.getPackageName()+ File.separator+ FileDownloaderUtil.TEMP_DIR);
+                File dir = new File(FileDownloaderUtil.getRootCacheDirectory(activity));
                 if(!dir.exists()){
                     dir.mkdirs();
                 }

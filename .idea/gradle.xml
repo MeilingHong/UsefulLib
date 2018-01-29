@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/download" />
             <option value="$PROJECT_DIR$/frequentlyusedlib" />
+            <option value="$PROJECT_DIR$/logforfile" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

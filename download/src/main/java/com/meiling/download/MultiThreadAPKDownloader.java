@@ -8,9 +8,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -214,7 +212,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
             if(code== HttpURLConnection.HTTP_OK || code== HttpURLConnection.HTTP_PARTIAL){
                 fileSize = httpURLConnection.getContentLength();
 //                Log.e("MainA","fileSize:"+fileSize);
-                File dir = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+ File.separator+activity.getPackageName()+ File.separator+ FileDownloaderUtil.TEMP_DIR);
+                File dir = new File(FileDownloaderUtil.getRootCacheDirectory(activity));
                 if(!dir.exists()){
                     dir.mkdirs();
                 }
