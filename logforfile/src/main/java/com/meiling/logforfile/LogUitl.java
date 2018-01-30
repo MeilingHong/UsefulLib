@@ -42,7 +42,7 @@ public class LogUitl {
         Log.e(TAG,msg);
 
         if(saveIntoLogFile){
-            //TODO 将信息加入队列里，开启一个单线程线程池去专门来进行日志信息的保存
+            //  将信息加入队列里，开启一个单线程线程池去专门来进行日志信息的保存
         }
     }
 }

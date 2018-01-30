@@ -111,7 +111,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
     protected void onProgressUpdate(Long... values) {
         downloadedSize = 0;
         /**
-         * TODO 覆盖文件
+         *   覆盖文件
          */
         if(subThreadList!=null && subThreadList.size()>1){
             for(int i = 0;i<sub_thread;i++){
@@ -141,7 +141,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
             httpURLConnection.setDoOutput(true);
             httpURLConnection.setConnectTimeout(5000);
             httpURLConnection.connect();
-            //TODO 当网址存在重定向时，使用重定向
+            //  当网址存在重定向时，使用重定向
             int code = httpURLConnection.getResponseCode();
             for(int redirectCount = 0; code / 100 == 3 && redirectCount < 5; ++redirectCount) {
                 httpURLConnection = this.createConnection(httpURLConnection.getHeaderField("Location"));
@@ -174,7 +174,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
                 /**
                  * 进行断点下载
                  */
-                final String fileName = FileNameHash.getSHA1String(netUrl+fileSize)//TODO 用于防止重复---（实际上仍存在重复的可能，虽然几率比较小）
+                final String fileName = FileNameHash.getSHA1String(netUrl+fileSize)//  用于防止重复---（实际上仍存在重复的可能，虽然几率比较小）
                         +netUrl.substring(netUrl.lastIndexOf("/")+1);
                 File apk = new File(dir, fileName);
                 this.savePath = apk.getAbsolutePath();
@@ -183,13 +183,13 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
 //                    apk.delete();
 //                    apk = new File(dir,fileName);
                     apk.createNewFile();
-                    //TODO 若文件不存在了，则需要创建文件，而且同步清除该文件的断点记录
+                    //  若文件不存在了，则需要创建文件，而且同步清除该文件的断点记录
                     for(int i = 0;i<sub_thread;i++){
-                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
-                        if(tempInfo!=null &&//TODO 不为空
-                                !"".equals(tempInfo) && //TODO 不为默认值
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//  在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//  不为空
+                                !"".equals(tempInfo) && //  不为默认值
                                 tempInfo.split(UpdateUtil.SPLIT).length==6) {
-                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            //  存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
                             UpdateUtil.setFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i),
                                     "");
                         }
@@ -197,11 +197,11 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
                 }else{
                     int count = 0;
                     for(int i = 0;i<sub_thread;i++){
-                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
-                        if(tempInfo!=null &&//TODO 不为空
-                                !"".equals(tempInfo) && //TODO 不为默认值
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//  在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//  不为空
+                                !"".equals(tempInfo) && //  不为默认值
                                 tempInfo.split(UpdateUtil.SPLIT).length==6) {
-                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            //  存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
                             long currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
                             long end = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[4]);
                             if(currentPosition>=end){
@@ -251,7 +251,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
 //                }
 
 
-                //TODO 保证子线程是启动的
+                //  保证子线程是启动的
                 while (true) {
                     if((subThreadList.get(0)!=null? subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? subThreadList.get(1).isAlive():true) &&
@@ -263,7 +263,7 @@ public class MultiThreadFileDownloader extends AsyncTask<String,Long,Integer> {
 
                 }
 
-                //TODO 保证子线程完成后再退出
+                //  保证子线程完成后再退出
                 while (true) {
                     if((subThreadList.get(0)!=null? !subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? !subThreadList.get(1).isAlive():true) &&

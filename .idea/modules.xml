@@ -3,12 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/UsefulLib.iml" filepath="$PROJECT_DIR$/UsefulLib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/UsefulLib.iml" filepath="$PROJECT_DIR$/UsefulLib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/download/download.iml" filepath="$PROJECT_DIR$/download/download.iml" />
-      <module fileurl="file://$PROJECT_DIR$/download/download.iml" filepath="$PROJECT_DIR$/download/download.iml" />
-      <module fileurl="file://$PROJECT_DIR$/frequentlyusedlib/frequentlyusedlib.iml" filepath="$PROJECT_DIR$/frequentlyusedlib/frequentlyusedlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/frequentlyusedlib/frequentlyusedlib.iml" filepath="$PROJECT_DIR$/frequentlyusedlib/frequentlyusedlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/logforfile/logforfile.iml" filepath="$PROJECT_DIR$/logforfile/logforfile.iml" />
     </modules>

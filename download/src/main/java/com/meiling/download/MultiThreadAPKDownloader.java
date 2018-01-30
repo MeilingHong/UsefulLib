@@ -44,11 +44,11 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
     private Context activity;
 
     /**
-     * TODO 修改点：
-     * TODO 1、需要判断网络切换时（切换网络时会出现问题），是否需要提示，暂停下载
-     * TODO 1.1、是否在允许在非WiFi网络状态下允许下载
-     * TODO 2、若支持暂停下载，则需要下载支持断点续传
-     * TODO 3、文件命名问题------如何建立一个有效的文件名映射规则
+     *   修改点：
+     *   1、需要判断网络切换时（切换网络时会出现问题），是否需要提示，暂停下载
+     *   1.1、是否在允许在非WiFi网络状态下允许下载
+     *   2、若支持暂停下载，则需要下载支持断点续传
+     *   3、文件命名问题------如何建立一个有效的文件名映射规则
      */
 
     public MultiThreadAPKDownloader(Activity context, String netUrl, IDownloadCallback icallback, IDownloadErrorCallback iErrorcallback, Dialog dialog){
@@ -59,7 +59,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
         this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
-        //TODO 默认不允许使用移动网络进行下载
+        //  默认不允许使用移动网络进行下载
         isAllowMobileNetwork = false;
     }
 
@@ -72,7 +72,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
         this.iErrorcallback = iErrorcallback;
         this.updateDialog = dialog;
         activity = context;
-        //TODO 根据配置进行规制进行下载，当允许时，切换为
+        //  根据配置进行规制进行下载，当允许时，切换为
         isAllowMobileNetwork = isMobileNet;
     }
 
@@ -85,13 +85,13 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
         this.updateDialog = dialog;
         activity = context;
 
-        //TODO 根据配置进行规制进行下载，当允许时，切换为
+        //  根据配置进行规制进行下载，当允许时，切换为
         isAllowMobileNetwork = isMobileNet;
     }
 
     public void start(){
-        //TODO 需要检查是否拥有INTERNET权限，与读写权限
-        //TODO 若需要引入，则compileSDKVersion 需要使用23 或以上版本
+        //  需要检查是否拥有INTERNET权限，与读写权限
+        //  若需要引入，则compileSDKVersion 需要使用23 或以上版本
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(activity,
@@ -133,7 +133,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
             }
             return;
         }
-        //TODO 允许进行下载的网络
+        //  允许进行下载的网络
         execute("");
     }
 
@@ -163,7 +163,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
         downloadedSize = 0;
 
         /**
-         * TODO 覆盖文件
+         *   覆盖文件
          */
         if(subThreadList!=null && subThreadList.size()>1){
             for(int i = 0;i<sub_thread;i++){
@@ -183,7 +183,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
 //        }
 
         /**
-         * TODO 使用相同的文件
+         *   使用相同的文件
          */
 //        Log.e("MainA","-------\n" +
 //                "downloadedSize:"+downloadedSize+"     ---fileSize："+fileSize);
@@ -217,7 +217,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
                     dir.mkdirs();
                 }
                 /**
-                 * TODO 每次下载覆盖重复的文件
+                 *   每次下载覆盖重复的文件
                  */
 //                File apk = new File(dir, FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
 //                this.savePath = apk.getAbsolutePath();
@@ -231,7 +231,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
 //                }
 
                 /**
-                 * TODO 使用相同的文件
+                 *   使用相同的文件
                  */
                 File apk = new File(dir, FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                 this.savePath = apk.getAbsolutePath();
@@ -240,13 +240,13 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
 //                    apk.delete();
 //                    apk = new File(dir,FileNameHash.getSHA1String(netUrl+fileSize)+".apk");
                     apk.createNewFile();
-                    //TODO 若文件不存在了，则需要创建文件，而且同步清除该文件的断点记录
+                    //  若文件不存在了，则需要创建文件，而且同步清除该文件的断点记录
                     for(int i = 0;i<sub_thread;i++){
-                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
-                        if(tempInfo!=null &&//TODO 不为空
-                                !"".equals(tempInfo) && //TODO 不为默认值
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//  在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//  不为空
+                                !"".equals(tempInfo) && //  不为默认值
                                 tempInfo.split(UpdateUtil.SPLIT).length==6) {
-                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            //  存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
                             UpdateUtil.setFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i),
                                     "");
                         }
@@ -254,11 +254,11 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
                 }else{
                     int count = 0;
                     for(int i = 0;i<sub_thread;i++){
-                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//TODO 在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
-                        if(tempInfo!=null &&//TODO 不为空
-                                !"".equals(tempInfo) && //TODO 不为默认值
+                        String tempInfo = UpdateUtil.getFileInfoValue(activity,FileNameHash.getSHA1String(netUrl+fileSize+"_"+i));//  在保存和获取断点数据时，必须根据子线程来，所以Key中必须带有子线程编号
+                        if(tempInfo!=null &&//  不为空
+                                !"".equals(tempInfo) && //  不为默认值
                                 tempInfo.split(UpdateUtil.SPLIT).length==6) {
-                            //TODO 存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
+                            //  存在则清除这个数据--------保持数据上的同步（以下载的文件为主）
                             long currentPosition = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[5]);
                             long end = Long.parseLong(tempInfo.split(UpdateUtil.SPLIT)[4]);
                             if(currentPosition>=end){
@@ -311,7 +311,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
                 }
 
 
-                //TODO 保证子线程是启动的
+                //  保证子线程是启动的
                 while (true) {
                     if((subThreadList.get(0)!=null? subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? subThreadList.get(1).isAlive():true) &&
@@ -323,7 +323,7 @@ public class MultiThreadAPKDownloader extends AsyncTask<String,Long,Integer> {
 
                 }
 
-                //TODO 保证子线程完成后再退出
+                //  保证子线程完成后再退出
                 while (true) {
                     if((subThreadList.get(0)!=null? !subThreadList.get(0).isAlive():true) &&
                             (subThreadList.get(1)!=null? !subThreadList.get(1).isAlive():true) &&
