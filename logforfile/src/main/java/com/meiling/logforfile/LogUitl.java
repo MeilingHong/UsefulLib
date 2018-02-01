@@ -1,5 +1,6 @@
 package com.meiling.logforfile;
 
+import android.content.Context;
 import android.util.Log;
 
 /**
@@ -14,9 +15,6 @@ import android.util.Log;
 public class LogUitl {
     private static final String TAG = LogUitl.class.getName();//
 
-    public static void log(String msg ,int logLevel){
-
-    }
 
     public static void v(String msg){
         Log.v(TAG,msg);
@@ -38,11 +36,12 @@ public class LogUitl {
         Log.e(TAG,msg);
     }
 
-    public static void e(String msg,boolean saveIntoLogFile){
+    public static void e(Context context,String msg, boolean saveIntoLogFile){
         Log.e(TAG,msg);
 
         if(saveIntoLogFile){
             //  将信息加入队列里，开启一个单线程线程池去专门来进行日志信息的保存
+            SaveLogUtil.getInstances().addIntoLogFile(context,msg);
         }
     }
 }
