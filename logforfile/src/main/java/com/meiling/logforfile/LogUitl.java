@@ -16,32 +16,41 @@ public class LogUitl {
     private static final String TAG = LogUitl.class.getName();//
 
 
-    public static void v(String msg){
-        Log.v(TAG,msg);
+    public static void v(String msg) {
+        Log.v(TAG, msg);
     }
 
-    public static void d(String msg){
-        Log.d(TAG,msg);
+    public static void d(String msg) {
+        Log.d(TAG, msg);
     }
 
-    public static void i(String msg){
-        Log.i(TAG,msg);
+    public static void i(String msg) {
+        Log.i(TAG, msg);
     }
 
-    public static void w(String msg){
-        Log.w(TAG,msg);
+    public static void w(String msg) {
+        Log.w(TAG, msg);
     }
 
-    public static void e(String msg){
-        Log.e(TAG,msg);
+    public static void e(String msg) {
+        Log.e(TAG, msg);
     }
 
-    public static void e(Context context,String msg, boolean saveIntoLogFile){
-        Log.e(TAG,msg);
+    public static void e(Context context, String msg, boolean saveIntoLogFile) {
+        Log.e(TAG, msg);
 
-        if(saveIntoLogFile){
+        if (saveIntoLogFile) {
             //  将信息加入队列里，开启一个单线程线程池去专门来进行日志信息的保存
-            SaveLogUtil.getInstances().addIntoLogFile(context,msg);
+            SaveLogUtil.getInstances().addIntoLogFile(context, msg);
+        }
+    }
+
+    public static void e(String packageNameAnMessage, boolean saveIntoLogFile) {
+        Log.e(TAG, packageNameAnMessage);
+
+        if (saveIntoLogFile) {
+            //  将信息加入队列里，开启一个单线程线程池去专门来进行日志信息的保存
+            SaveLogUtil.getInstances().addIntoLogFile(packageNameAnMessage);
         }
     }
 }

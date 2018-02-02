@@ -61,7 +61,7 @@ public class SaveLogUtil {
         logFormat = new SimpleDateFormat(LOG_HEAD);
     }
 
-    public static SaveLogUtil getInstances() {
+    protected static SaveLogUtil getInstances() {
         return LOGHolder.instance;
     }
 
@@ -205,7 +205,7 @@ public class SaveLogUtil {
      * @param context
      * @return
      */
-    private String getRootLogDirPath(Context context) {
+    protected String getRootLogDirPath(Context context) {
         return Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
                 context.getApplicationContext().getPackageName() + File.separator + ROOT_DIR_NAME;
     }
@@ -216,7 +216,7 @@ public class SaveLogUtil {
      * @param context
      * @param logMsg
      */
-    public void addIntoLogFile(final Context context, final String logMsg) {
+    protected void addIntoLogFile(final Context context, final String logMsg) {
         if (StorageUtil.externalMemoryAvailable()// 保证外存挂载
                 && IStorageInfo.SIZE_512M < StorageUtil.getAvailableExternalMemorySize()
                 ) {//保证外存存在至少512M以上的空间，才允许进行日志记录（尽可能保证日志记录，不影响系统的运行）
@@ -363,7 +363,7 @@ public class SaveLogUtil {
      *
      * @return
      */
-    private String getRootLogDirPath() {
+    protected String getRootLogDirPath() {
         return Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + ROOT_DIR_NAME;
     }
 
@@ -450,7 +450,7 @@ public class SaveLogUtil {
      *
      * @param logMsg
      */
-    public void addIntoLogFile(final String logMsg) {
+    protected void addIntoLogFile(final String logMsg) {
         if (StorageUtil.externalMemoryAvailable()// 保证外存挂载
                 && IStorageInfo.SIZE_512M < StorageUtil.getAvailableExternalMemorySize()
                 ) {//保证外存存在至少512M以上的空间，才允许进行日志记录（尽可能保证日志记录，不影响系统的运行）
@@ -487,6 +487,29 @@ public class SaveLogUtil {
             throw new RuntimeException("External storage no available for saving log!");
         } else {
             throw new RuntimeException("Unknown error for saving log!");
+        }
+    }
+
+    // delete all file in specific directory
+    protected void deleteAllFileInDir(File thisDir) {
+        if (thisDir == null) {
+            return;
+        } else {
+            if (thisDir.isFile()) {
+                thisDir.delete();// 避免由于正在访问文件而导致的删除出现异常
+            } else {// file is directory
+                File[] temp = thisDir.listFiles();
+                for (File subFile :
+                        temp) {
+                    if (subFile != null) {
+                        if (subFile.isFile()) {
+                            subFile.delete();
+                        } else {
+                            deleteAllFileInDir(subFile);
+                        }
+                    }
+                }
+            }
         }
     }
 
